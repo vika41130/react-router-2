@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import './App.css';
-import { BrowserRouter as Router, Link, NavLink, Redirect} from 'react-router-dom';
+import { BrowserRouter as Router, Link, NavLink, Redirect, Prompt} from 'react-router-dom';
 import Route from 'react-router-dom/Route';
 
-const User = ({match}) => {
+const User = (props) => {
   return(
-    <h1> Welcome User - { match.params.username }</h1>
+    <h1> Welcome User - { props.username }</h1>
   );
 }
 
@@ -15,8 +15,17 @@ class App extends Component {
   }
 
   loginHandle = () => {
-    this.setState({loggedin: true});
+    this.setState(prevState => (
+        {
+          loggedin: !prevState.loggedin
+        }
+      )
+    );
   }
+
+  // logoutHandle = () => {
+  //   this.setState({loggedin: false});
+  // }
 
   render() {
     return (
@@ -30,14 +39,22 @@ class App extends Component {
               <NavLink to="/about/" exact activeStyle={{color:'green'}}>About</NavLink>
             </li>
             <li>
-              <NavLink to="/user/" exact activeStyle={{color:'green'}}>User</NavLink>
+              <NavLink to="/user/John" exact activeStyle={{color:'green'}}>John</NavLink>
             </li>
 
-            {/* <li><Link to="/">Home</Link></li>
-            <li><Link to="/about/">About</Link></li> */}
+            <li>
+              <NavLink to="/user/Peter" exact activeStyle={{color:'green'}}>Peter</NavLink>
+            </li>
           </ul>
 
-          {/* <input type="button" value="log in" onClick={this.loginHandle.bind(this)}/> */}
+          <Prompt 
+            when={!this.state.loggedin}
+            message={(location)=> {
+              return location.pathname.startsWith('/user') ? 'Are you sure ?' : true
+            }}
+          />
+
+          <input type="button" value={ this.state.loggedin ? 'logout' : 'log in'} onClick={this.loginHandle.bind(this)} />
 
             <Route exact path="/" strict render={
               () => {
@@ -49,11 +66,9 @@ class App extends Component {
                 return (<h1>About</h1>)
               }
             }/>
-            <Route exact path="/user/" strict component={User}/>
-            <Route exact path="/user/:username" strict component={User}/>
-            {/* <Route exact path="/user/:username" strict render={()=> (
-              this.state.loggedin ? ( <User />) : (<Redirect to="/" />)
-            )}/> */}
+            <Route exact path="/user/:username" strict render={({match})=> (
+              this.state.loggedin ? ( <User username={match.params.username} />) : (<Redirect to="/" />)
+            )}/>
           </div>
         </Router>
     );
